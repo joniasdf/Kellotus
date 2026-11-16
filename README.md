@@ -18,9 +18,13 @@ Debug-APK:
 app/build/outputs/apk/debug/Kellotus-debug.apk
 ```
 
-Asennus puhelimeen:
+Valmis debug-APK on GitHub Releasesissa: [github.com/joniasdf/Kellotus/releases/latest](https://github.com/joniasdf/Kellotus/releases/latest). Sen voi ladata ja asentaa puhelimeen ilman omaa käännöstä.
+
+Asennus ladatusta paketista tai paikallisesta käännöksestä:
 
 ```bash
+adb install -r Kellotus-debug.apk
+# tai
 adb install -r app/build/outputs/apk/debug/Kellotus-debug.apk
 ```
 
