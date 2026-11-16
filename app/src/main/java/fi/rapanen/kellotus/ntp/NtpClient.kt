@@ -2,7 +2,9 @@ package fi.rapanen.kellotus.ntp
 
 import fi.rapanen.kellotus.time.AnchoredTime
 import fi.rapanen.kellotus.time.Timebase
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.withContext
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.Inet4Address
@@ -75,22 +77,22 @@ class NtpClient(
         pauseMs: Long = 80,
         allowLocalNetwork: Boolean = true,
         onProgress: (done: Int, total: Int, bestDelayNanos: Long?) -> Unit = { _, _, _ -> },
-    ): NtpOutcome {
+    ): NtpOutcome = withContext(Dispatchers.IO) {
         val name = host.trim()
         if (!HostNames.isAcceptable(name)) {
-            return NtpOutcome.Failure(NtpFailure.INVALID, "host")
+            return@withContext NtpOutcome.Failure(NtpFailure.INVALID, "host")
         }
         if (!allowLocalNetwork && name.endsWith(".local", ignoreCase = true)) {
-            return NtpOutcome.Failure(NtpFailure.LOCAL_NETWORK, name)
+            return@withContext NtpOutcome.Failure(NtpFailure.LOCAL_NETWORK, name)
         }
         val addresses = try {
             resolver.resolve(name).sortedWith(compareBy { if (it is Inet4Address) 0 else 1 })
         } catch (error: UnknownHostException) {
-            return NtpOutcome.Failure(NtpFailure.UNKNOWN_HOST, error.message)
+            return@withContext NtpOutcome.Failure(NtpFailure.UNKNOWN_HOST, error.message)
         }
-        if (addresses.isEmpty()) return NtpOutcome.Failure(NtpFailure.UNKNOWN_HOST, name)
+        if (addresses.isEmpty()) return@withContext NtpOutcome.Failure(NtpFailure.UNKNOWN_HOST, name)
         if (!allowLocalNetwork && addresses.any { it.isNonPublic() }) {
-            return NtpOutcome.Failure(NtpFailure.LOCAL_NETWORK, addresses.joinToString { it.hostAddress ?: it.hostName })
+            return@withContext NtpOutcome.Failure(NtpFailure.LOCAL_NETWORK, addresses.joinToString { it.hostAddress ?: it.hostName })
         }
 
         val good = ArrayList<NtpSample>(samples)
@@ -128,9 +130,9 @@ class NtpClient(
             if (stopped) break
             if (good.size < samples && attempts < maxAttempts) pause(pauseMs)
         }
-        if (good.isEmpty()) return NtpOutcome.Failure(lastFailure, lastDetail)
+        if (good.isEmpty()) return@withContext NtpOutcome.Failure(lastFailure, lastDetail)
         val best = NtpMath.selectLowestDelay(good)
-        return NtpOutcome.Success(
+        return@withContext NtpOutcome.Success(
             NtpFix(
                 host = name,
                 address = best.address,
