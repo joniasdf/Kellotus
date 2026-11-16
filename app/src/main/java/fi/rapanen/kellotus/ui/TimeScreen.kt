@@ -48,9 +48,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
@@ -158,6 +160,22 @@ fun KellotusScreen(viewModel: KellotusViewModel) {
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     Header()
+                    var page by rememberSaveable { mutableIntStateOf(0) }
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FilterChip(
+                            selected = page == 0,
+                            onClick = { page = 0 },
+                            label = { Text(stringResource(R.string.mode_clock)) },
+                        )
+                        FilterChip(
+                            selected = page == 1,
+                            onClick = { page = 1 },
+                            label = { Text(stringResource(R.string.mode_timegrapher)) },
+                        )
+                    }
+                    if (page == 1) {
+                        TimegrapherScreen(state.ntp, elapsed)
+                    } else {
                     ServerCard(
                         state = state,
                         onSelect = viewModel::selectServer,
@@ -203,6 +221,7 @@ fun KellotusScreen(viewModel: KellotusViewModel) {
                         style = MaterialTheme.typography.bodySmall,
                         color = Muted,
                     )
+                    }
                     Spacer(Modifier.height(8.dp))
                 }
             }

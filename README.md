@@ -68,6 +68,16 @@ Karkaussekunti luetaan vastaanottimelta, jos se on välillä 1…40. Muuten käy
 
 Jos raakamittauksia ei tule, käytetään `Location.getTime()`- ja `Location.getElapsedRealtimeNanos()`-arvoja GPS-providerilta.
 
+## Käyntimittari
+
+Versiosta 1.1.0 alkaen Kellotuksessa on käyntimittari mekaaniselle kellolle. Se kuuntelee mikrofonilla tikitystä 48 kHz:n näytteillä, suodattaa kaistan ja etsii iskujen alut. Tahti tunnistetaan automaattisesti yleisistä arvoista (18 000–36 000 bph) tai sen voi valita itse.
+
+Näytetään käynti sekunteina vuorokaudessa (positiivinen = edistää, negatiivinen = jätättää), tahtivirhe, amplitudiarvio nostokulmasta (oletus 52°) ja ohje säätimelle: hidasta tai nopeuta. Käyrä on aikagraafin tapaan pistepilvi.
+
+Mikrofonin näytekello kalibroidaan laskemalla näytteet `elapsedRealtimeNanos`-ikkunaa vasten. Jos kaksi NTP-synkronointia ehtii mitata monotonisen kellon käynnin UTC:hen nähden, ikkuna skaalataan sillä. Korjaus on mukana käyntiluvussa, ja näytöllä näkyy poikkeama ppm:inä.
+
+Kameraseurantaa sekuntiosoittimelle ei tässä versiossa ole.
+
 ## Tarkkuuden rajat
 
 - NTP olettaa, että meno- ja paluuyhteys ovat yhtä hitaita. Virhe on enintään noin puolet kiertoviiveestä. Pienin viive kahdeksasta näytteestä rajaa tätä, mutta mobiiliverkko voi silti olla epäsymmetrinen.
